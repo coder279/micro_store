@@ -1,4 +1,4 @@
-module github.com/coder279/micro_store
+module github.com/coder279/category
 
 go 1.14
 

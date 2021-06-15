@@ -1,8 +1,8 @@
 package handler
 import (
 	"context"
-    "github.com/coder279/micro_store/domain/service"
-	"github.com/coder279/micro_store/proto/category"
+    "github.com/coder279/category/domain/service"
+	category "github.com/coder279/category/proto/category"
 )
 
 type Category struct{

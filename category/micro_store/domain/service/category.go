@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/coder279/micro_store/domain/model"
-	"github.com/coder279/micro_store/domain/repository"
+	"github.com/coder279/category/domain/model"
+	"github.com/coder279/category/domain/repository"
 )
 
 type ICategoryDataService interface {
