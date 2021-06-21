@@ -1,7 +1,7 @@
 package repository
 import (
 	"github.com/jinzhu/gorm"
-	"github.com/coder279/micro_store/product/domain/model"
+	"github.com/coder279/product/domain/model"
 )
 type IProductRepository interface{
     InitTable() error

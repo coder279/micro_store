@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/coder279/micro_store/product/domain/model"
-	"github.com/coder279/micro_store/product/domain/repository"
+	"github.com/coder279/product/domain/model"
+	"github.com/coder279/product/domain/repository"
 )
 
 type IProductDataService interface {

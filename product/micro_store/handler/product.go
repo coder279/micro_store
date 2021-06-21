@@ -2,10 +2,10 @@ package handler
 
 import (
 	"context"
-	"github.com/coder279/micro_store/product/common"
-	"github.com/coder279/micro_store/product/domain/model"
-	"github.com/coder279/micro_store/product/domain/service"
-	"github.com/coder279/micro_store/product/proto/product"
+	"github.com/coder279/product/common"
+	"github.com/coder279/product/domain/model"
+	"github.com/coder279/product/domain/service"
+	"github.com/coder279/product/proto/product"
 )
 type Product struct{
      ProductDataService service.IProductDataService

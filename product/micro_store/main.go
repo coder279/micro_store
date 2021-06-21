@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/coder279/micro_store/product/common"
-	"github.com/coder279/micro_store/product/domain/repository"
-	service2 "github.com/coder279/micro_store/product/domain/service"
-	"github.com/coder279/micro_store/product/handler"
+	"github.com/coder279/product/common"
+	"github.com/coder279/product/domain/repository"
+	service2 "github.com/coder279/product/domain/service"
+	"github.com/coder279/product/handler"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/micro/go-micro/v2"
@@ -14,7 +14,7 @@ import (
 	opentracing2 "github.com/micro/go-plugins/wrapper/trace/opentracing/v2"
 	"github.com/opentracing/opentracing-go"
 
-	product "github.com/coder279/micro_store/product/proto/product"
+	product "github.com/coder279/product/proto/product"
 )
 
 func main() {
@@ -47,7 +47,7 @@ func main() {
 	//禁止创建副表
 	db.SingularTable(true)
 	//初始化
-	repository.NewProductRepository(db).InitTable()
+	//repository.NewProductRepository(db).InitTable()
 	productDataService := service2.NewProductDataService(repository.NewProductRepository(db))
 	// New Service
 	service := micro.NewService(
