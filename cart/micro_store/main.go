@@ -26,11 +26,11 @@ func main() {
 	//注册中心
 	consul := consul2.NewRegistry(func(options *registry.Options) {
 		options.Addrs = []string{
-			"127.0.0.1:8500",
+			"192.168.31.112:8500",
 		}
 	})
 	//链路追踪
-	t, io, err := common.NewTracer("go.micro.service.cart", "localhost:6831")
+	t, io, err := common.NewTracer("go.micro.service.cart", "192.168.31.112:6831")
 	if err != nil {
 		log.Error(err)
 	}
@@ -54,7 +54,7 @@ func main() {
 	service := micro.NewService(
 		micro.Name("go.micro.service.cart"),
 		micro.Version("latest"),
-		micro.Address("0.0.0.0:8087"),
+		micro.Address("192.168.31.112:8087"),
 		micro.Registry(consul),
 		micro.WrapHandler(opentracing2.NewHandlerWrapper(opentracing.GlobalTracer())),
 		//限流

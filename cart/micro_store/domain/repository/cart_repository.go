@@ -3,6 +3,7 @@ import (
 	"errors"
 	"github.com/coder279/cart/domain/model"
 	"github.com/jinzhu/gorm"
+	"github.com/prometheus/common/log"
 )
 type ICartRepository interface{
     InitTable() error
@@ -61,6 +62,7 @@ func (u *CartRepository) UpdateCart(cart *model.Cart) error {
 
 //获取结果集
 func (u *CartRepository) FindAll(userID int64)(cartAll []model.Cart,err error) {
+	log.Info(userID)
 	return cartAll, u.mysqlDb.Where("user_id = ?",userID).Find(&cartAll).Error
 }
 
