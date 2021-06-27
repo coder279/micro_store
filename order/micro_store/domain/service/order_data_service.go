@@ -11,6 +11,9 @@ type IOrderDataService interface {
 	UpdateOrder(*model.Order) error
 	FindOrderByID(int64) (*model.Order, error)
 	FindAllOrder() ([]model.Order, error)
+	UpdateShipStatus(int64,int32) error
+	UpdatePayStatus(int64,int32) error
+
 }
 
 
@@ -47,5 +50,15 @@ func (u *OrderDataService) FindOrderByID(orderID int64) (*model.Order, error) {
 //查找
 func (u *OrderDataService) FindAllOrder() ([]model.Order, error) {
 	return u.OrderRepository.FindAll()
+}
+
+//修改物流状态
+func (u *OrderDataService) UpdateShipStatus(orderID int64, shipStatus int32) error {
+	return u.OrderRepository.UpdateShipStatus(orderID,shipStatus)
+}
+
+//修改支付状态
+func (u *OrderDataService) UpdatePayStatus(orderID int64,payStatus int32) error {
+	return u.OrderRepository.UpdatePayStatus(orderID,payStatus)
 }
 

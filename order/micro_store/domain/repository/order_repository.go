@@ -1,5 +1,6 @@
 package repository
 import (
+	"errors"
 	"github.com/jinzhu/gorm"
 	"github.com/coder279/order/domain/model"
 )
@@ -10,6 +11,9 @@ type IOrderRepository interface{
 	DeleteOrderByID(int64) error
 	UpdateOrder(*model.Order) error
 	FindAll()([]model.Order,error)
+    UpdateShipStatus(int64,int32) error
+    UpdatePayStatus(int64,int32) error
+
 
 }
 //创建orderRepository
@@ -29,7 +33,7 @@ func (u *OrderRepository)InitTable() error  {
 //根据ID查找Order信息
 func (u *OrderRepository)FindOrderByID(orderID int64) (order *model.Order,err error) {
 	order = &model.Order{}
-	return order, u.mysqlDb.First(order,orderID).Error
+	return order, u.mysqlDb.Preload("OrderDetail").First(order,orderID).Error
 }
 
 //创建Order信息
@@ -39,7 +43,26 @@ func (u *OrderRepository) CreateOrder(order *model.Order) (int64, error) {
 
 //根据ID删除Order信息
 func (u *OrderRepository) DeleteOrderByID(orderID int64) error {
-	return u.mysqlDb.Where("id = ?",orderID).Delete(&model.Order{}).Error
+	tx := u.mysqlDb.Begin()
+	defer func() {
+		if r:= recover();r!=nil{
+			tx.Rollback()
+		}
+	}()
+	if tx.Error != nil {
+		return tx.Error
+	}
+	//彻底删除Order信息
+	if err := tx.Unscoped().Where("id = ?",orderID).Delete(&model.Order{}).Error;err!=nil{
+		tx.Rollback()
+		return err
+	}
+	//彻底OrderDetail信息
+	if err := tx.Unscoped().Where("order_id = ?",orderID).Delete(&model.OrderDetail{}).Error;err!=nil{
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit().Error
 }
 
 //更新Order信息
@@ -49,6 +72,30 @@ func (u *OrderRepository) UpdateOrder(order *model.Order) error {
 
 //获取结果集
 func (u *OrderRepository) FindAll()(orderAll []model.Order,err error) {
-	return orderAll, u.mysqlDb.Find(&orderAll).Error
+	return orderAll, u.mysqlDb.Preload("OrderDetail").Find(&orderAll).Error
+}
+// 更新发货状态
+func (u *OrderRepository) UpdateShipStatus(OrderID int64,ShipStatus int32) error {
+	db := u.mysqlDb.Model(&model.Order{}).Where("id = ?",
+		OrderID).UpdateColumn("ship_status",ShipStatus)
+	if db.Error != nil {
+		return db.Error
+	}
+	if db.RowsAffected == 0 {
+		return errors.New("更新失败")
+	}
+	return nil
+}
+//更新支付状态
+func (u *OrderRepository) UpdatePayStatus(OrderID int64,PayStatus int32) error{
+	db := u.mysqlDb.Model(&model.Order{}).Where("id = ?",
+		OrderID).UpdateColumn("ship_status",PayStatus)
+	if db.Error != nil {
+		return db.Error
+	}
+	if db.RowsAffected == 0 {
+		return errors.New("更新失败")
+	}
+	return nil
 }
 
