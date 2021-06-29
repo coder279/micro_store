@@ -1,0 +1,2 @@
+{"level":"error","ts":"2021-06-29T21:48:24.620+0800","caller":"micro_store/main.go:26","msg":"error loading source consul: Get \"http://localhost:8500/v1/kv/micro/config?recurse=\": dial tcp [::1]:8500: connectex: No connection could be made because the target machine actively refused it."}
+{"level":"error","ts":"2021-06-29T21:48:26.156+0800","caller":"micro_store/main.go:46","msg":"Error 1045: Access denied for user ''@'localhost' (using password: NO)"}

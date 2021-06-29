@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/coder279/order/common"
-	"github.com/coder279/order/domain/repository"
-	service2 "github.com/coder279/order/domain/service"
-	"github.com/coder279/order/handler"
+	"github.com/coder279/payment/common"
+	"github.com/coder279/payment/domain/repository"
+	service2 "github.com/coder279/payment/domain/service"
+	"github.com/coder279/payment/handler"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/micro/go-micro/v2"
@@ -16,17 +16,14 @@ import (
 	opentracing2 "github.com/micro/go-plugins/wrapper/trace/opentracing/v2"
 	"github.com/opentracing/opentracing-go"
 
-	order "github.com/coder279/order/proto/order"
+	payment "github.com/coder279/payment/proto/payment"
 )
 
-var  (
-	QPS = 1000
-)
 func main() {
 	//配置中心
-	consulConfig,err := common.GetConsulConfig("localhost",8500,"micro/config")
+	consulConfig,err := common.GetConsulConfig("localhost",8500,"/micro/config")
 	if err != nil {
-		log.Error(err)
+		common.Error(err)
 	}
 	//注册中心
 	consul := consul.NewRegistry(func(options *registry.Options) {
@@ -34,54 +31,53 @@ func main() {
 			"localhost:8500",
 		}
 	})
-	//链路追踪
-	t,io,err := common.NewTracer("go.micro.service.order","localhost:6831")
+	//jaeger
+	t,io,err := common.NewTracer("go.micro.service.payment","localhost:6381")
 	if err != nil {
-		log.Error(err)
+		common.Error(err)
 	}
 	defer io.Close()
 	opentracing.SetGlobalTracer(t)
-	//初始化数据库
+	//mysql 设置
 	mysqlInfo := common.GetMysqlFromConsul(consulConfig,"mysql")
-	db,err := gorm.Open("mysql",mysqlInfo.User+":"+mysqlInfo.Pwd+"@/"+mysqlInfo.Database+
-		"?charset=utf8&parseTime=True&loc=Local")
-	if err != nil {
-		log.Error(err)
+	//初始化数据库
+	db,err := gorm.Open("mysql" , mysqlInfo.User+":"+mysqlInfo.Pwd+"@/"+mysqlInfo.Database+"?charset=utf8&parseTime=True&loc=Local")
+	if err !=nil {
+		common.Error(err)
 	}
 	defer db.Close()
+	//禁止复数表
 	db.SingularTable(true)
-	tableInit := repository.NewOrderRepository(db)
+	// 创建表
+	tableInit := repository.NewPaymentRepository(db)
 	tableInit.InitTable()
-
-	//创建实例
-	orderDataService := service2.NewOrderDataService(repository.NewOrderRepository(db))
-
-	//暴漏监控地址
-	common.PromethuesBoot(9003)
-
-
+	//监控
+	common.PromethuesBoot(9093)
 
 	// New Service
 	service := micro.NewService(
-		micro.Name("go.micro.service.order"),
+		micro.Name("go.micro.service.payment"),
 		micro.Version("latest"),
-		//暴漏服务地址
-		micro.Address(":9085"),
+		micro.Address("0.0.0.0:8089"),
 		//添加注册中心
 		micro.Registry(consul),
 		//添加链路追踪
 		micro.WrapHandler(opentracing2.NewHandlerWrapper(opentracing.GlobalTracer())),
-		//添加限流
-		micro.WrapHandler(ratelimit.NewHandlerWrapper(QPS)),
-		//添加监控
+		//加载限流
+		micro.WrapHandler(ratelimit.NewHandlerWrapper(1000)),
+		//加载监控
 		micro.WrapHandler(prometheus.NewHandlerWrapper()),
+
 	)
 
 	// Initialise service
 	service.Init()
 
 	// Register Handler
-	order.RegisterOrderHandler(service.Server(), &handler.Order{OrderDataService:orderDataService})
+	paymentDataService := service2.NewPaymentDataService(repository.NewPaymentRepository(db))
+
+	// Register Handler
+	payment.RegisterPaymentHandler(service.Server(), &handler.Payment{PaymentDataService:paymentDataService})
 
 	// Run service
 	if err := service.Run(); err != nil {
